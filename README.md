@@ -19,3 +19,27 @@ This repo strongly based on [Yunet training repo](https://github.com/ShiqiYu/lib
    mim install "mmcv-full==1.6.0" \
    -f https://download.openmmlab.com/mmcv/dist/cu116/torch1.12/index.html
   ```
+
+   ### Improvement
+   1. Use takenique SE - squeeze and excitation block
+   2. Increase the size of model from 'nano' to 'tiny', it's able to increase to medium or large if we need but trade-off for x% speed. But the speed is already high
+   3. Increase batch size training from 16 to 32 or higher also contribute to the mAP
+   4. I also add other dataset like: face in COCO2017, Face Detection Kaggle, Lagenda but it seems no improvement due to the different in data distribution (Maybe)
+
+
+   ### Training
+   ```shell
+   CUDA_VISIBLE_DEVICES=0,1 bash tools/dist_train.sh ./configs/yunet_n.py 2 12345
+   ```
+
+   ### Testing on Wider face
+   ```shell
+   python tools/test_widerface.py ./configs/yunet_n.py ./weights/yunet_n.pth --mode 2
+   ```
+
+   ### Result
+   ```shell
+   Baseline Yunet_n: AP_easy=0.892, AP_medium=0.883, AP_hard=0.811
+   SE Yunet_n: AP_easy=0.892, AP_medium=0.884, AP_hard=0.815 only + about 10% params
+   Tiny Yunet_t: AP_easy=0.906, AP_medium=0.896, AP_hard=0.829 + about 30% params
+   ```

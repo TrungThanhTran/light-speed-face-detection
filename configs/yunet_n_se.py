@@ -1,18 +1,16 @@
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0005)
 optimizer_config = dict(grad_clip=None)
-
 lr_mult = 8
 lr_config = dict(
     policy='step',
     warmup='linear',
     warmup_iters=1500,
     warmup_ratio=0.001,
-    step=[50 * lr_mult, 68 * lr_mult])
-runner = dict(type='EpochBasedRunner', max_epochs=80 * lr_mult)
-
-checkpoint_config = dict(interval=1)
+    step=[400, 544])
+runner = dict(type='EpochBasedRunner', max_epochs=640)
+checkpoint_config = dict(interval=80)
 log_config = dict(
-    interval=200,
+    interval=50,
     hooks=[dict(type='TextLoggerHook'),
            dict(type='TensorboardLoggerHook')])
 dist_params = dict(backend='nccl')
@@ -24,10 +22,9 @@ dataset_type = 'RetinaFaceDataset'
 data_root = 'data/widerface/'
 train_root = 'data/widerface/'
 val_root = 'data/widerface/'
-img_norm_cfg = dict(mean=[0., 0., 0.], std=[1., 1., 1.], to_rgb=False)
-
+img_norm_cfg = dict(mean=[0.0, 0.0, 0.0], std=[1.0, 1.0, 1.0], to_rgb=False)
 data = dict(
-    samples_per_gpu=32,
+    samples_per_gpu=72,
     workers_per_gpu=4,
     train=dict(
         type='RetinaFaceDataset',
@@ -43,8 +40,8 @@ data = dict(
             dict(type='RandomFlip', flip_ratio=0.5),
             dict(
                 type='Normalize',
-                mean=[0., 0., 0.],
-                std=[1., 1., 1.],
+                mean=[0.0, 0.0, 0.0],
+                std=[1.0, 1.0, 1.0],
                 to_rgb=False),
             dict(type='DefaultFormatBundle'),
             dict(
@@ -69,8 +66,8 @@ data = dict(
                     dict(type='RandomFlip', flip_ratio=0.0),
                     dict(
                         type='Normalize',
-                        mean=[0., 0., 0.],
-                        std=[1., 1., 1.],
+                        mean=[0.0, 0.0, 0.0],
+                        std=[1.0, 1.0, 1.0],
                         to_rgb=False),
                     dict(type='Pad', size=(640, 640), pad_val=0),
                     dict(type='ImageToTensor', keys=['img']),
@@ -92,31 +89,32 @@ data = dict(
                     dict(type='RandomFlip', flip_ratio=0.0),
                     dict(
                         type='Normalize',
-                        mean=[0., 0., 0.],
-                        std=[1., 1., 1.],
+                        mean=[0.0, 0.0, 0.0],
+                        std=[1.0, 1.0, 1.0],
                         to_rgb=False),
                     dict(type='Pad', size=(640, 640), pad_val=0),
                     dict(type='ImageToTensor', keys=['img']),
                     dict(type='Collect', keys=['img'])
                 ])
         ]))
-
 model = dict(
     type='YuNet',
     backbone=dict(
         type='YuNetBackbone',
-        stage_channels=[[3, 24, 24], [24, 80], [80, 80], [80, 80], [80, 80],
-                        [80, 80]],
+        stage_channels=[[3, 24, 24], [24, 96], [96, 64], [64, 64], [64, 64],
+                        [64, 64]],
         downsample_idx=[0, 2, 3, 4],
-        out_idx=[3, 4, 5]),
-    neck=dict(type='TFPN', in_channels=[80, 80, 80], out_idx=[0, 1, 2]),
+        out_idx=[3, 4, 5],
+        se_stages=(False, False, False, True, True, False),
+        se_reduction=8),
+    neck=dict(type='TFPN', in_channels=[64, 64, 64], out_idx=[0, 1, 2]),
     bbox_head=dict(
         type='YuNet_Head',
         num_classes=1,
-        in_channels=80,
+        in_channels=64,
         shared_stacked_convs=1,
         stacked_convs=0,
-        feat_channels=80,
+        feat_channels=64,
         prior_generator=dict(
             type='MlvlPointGenerator', offset=0, strides=[8, 16, 32]),
         loss_cls=dict(
@@ -133,20 +131,15 @@ model = dict(
             type='CrossEntropyLoss',
             use_sigmoid=True,
             reduction='sum',
-            loss_weight=1.0),
-    ),
+            loss_weight=1.0)),
     train_cfg=dict(assigner=dict(type='SimOTAAssigner', center_radius=2.5)),
     test_cfg=dict(
         nms_pre=-1,
         min_bbox_size=0,
         score_thr=0.02,
         nms=dict(type='nms', iou_threshold=0.45),
-        max_per_img=-1,
-    ))
-
-evaluation = dict(
-    interval=1,  # validate every epoch (or set a step number)
-    metric='mAP',
-    save_best='mAP',   # save best checkpoint by validation mAP
-    rule='greater'
-)
+        max_per_img=-1))
+evaluation = dict(interval=1, metric='mAP', save_best='mAP', rule='greater')
+work_dir = './work_dirs/yunet_n_se'
+auto_resume = False
+gpu_ids = range(0, 2)
