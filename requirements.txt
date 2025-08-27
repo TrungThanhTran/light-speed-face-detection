@@ -1,0 +1,10 @@
+Cython==0.29.33
+numpy
+onnxruntime
+onnx
+scipy
+tqdm
+terminaltables
+mmpycocotools
+future
+tensorboard
