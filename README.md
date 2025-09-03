@@ -23,6 +23,7 @@ This repo strongly based on [Yunet training repo](https://github.com/ShiqiYu/lib
    ### Improvement
    1. Use takenique SE - squeeze and excitation block
    2. Increase the size of model from 'nano' to 'tiny', it's able to increase to medium or large if we need but trade-off for x% speed. But the speed is already high
+      Note: WiderFace is considered as a big dataset for face detection, it's common to increase the size (tradeoff for speed) to gain higher metrics
    3. Increase batch size training from 16 to 32 or higher also contribute to the mAP
    4. I also add other dataset like: face in COCO2017, Face Detection Kaggle, Lagenda but it seems no improvement due to the different in data distribution (Maybe)
 
