@@ -41,6 +41,7 @@ This repo strongly based on [Yunet training repo](https://github.com/ShiqiYu/lib
    ### Result
    ```shell
    Baseline Yunet_n: AP_easy=0.892, AP_medium=0.883, AP_hard=0.811
-   SE Yunet_n: AP_easy=0.892, AP_medium=0.884, AP_hard=0.815 only + about 10% params
-   Tiny Yunet_t: AP_easy=0.906, AP_medium=0.896, AP_hard=0.829 + about 30% params
+   SE Yunet_n: AP_easy=0.892, AP_medium=0.884, AP_hard=0.815    | only + about 10% params
+   Tiny Yunet_t: AP_easy=0.906, AP_medium=0.896, AP_hard=0.829  | + about 30% params
+   Medium Yunet_m: AP_easy=0.913, AP_medium=0.90338, AP_hard=0.838 | + about 50% params    
    ```
